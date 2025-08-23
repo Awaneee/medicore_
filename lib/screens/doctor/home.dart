@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/repo.dart';
 import '../../widgets/common.dart';
+import '../chatbot_screen.dart';
 
 class DoctorHomeScreen extends StatefulWidget {
   final String doctorId;
@@ -16,6 +17,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     final tabs = [
       _appointments(),
       _availability(),
+      const ChatbotScreen(),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text('Doctor Portal')),
@@ -27,6 +29,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
           NavigationDestination(icon: Icon(Icons.people), label: 'Appts'),
           NavigationDestination(
               icon: Icon(Icons.settings), label: 'Availability'),
+          NavigationDestination(icon: Icon(Icons.chat), label: 'Chatbot'),
         ],
       ),
     );

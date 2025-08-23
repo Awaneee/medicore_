@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginFields(BuildContext context) {
-    InputDecoration _dec(String label, String? error) => InputDecoration(
+    InputDecoration dec(String label, String? error) => InputDecoration(
           labelText: label,
           errorText: error,
           filled: true,
@@ -170,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: TextField(
               controller: doctorIdController,
               onChanged: (_) => setState(() {}),
-              decoration: _dec('Doctor ID', doctorIdError),
+              decoration: dec('Doctor ID', doctorIdError),
             ),
           ),
         if (selectedRole == 'Patient')
@@ -179,14 +179,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: TextField(
               controller: patientIdController,
               onChanged: (_) => setState(() {}),
-              decoration: _dec('Patient ID', patientIdError),
+              decoration: dec('Patient ID', patientIdError),
             ),
           ),
         if (selectedRole == 'Caregiver')
           TextField(
             controller: caregiverCodeController,
             onChanged: (_) => setState(() {}),
-            decoration: _dec('Special Caregiver Code', caregiverCodeError),
+            decoration: dec('Special Caregiver Code', caregiverCodeError),
           ),
       ],
     );
