@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hackto/screens/patient/chatbot/chatbot.dart';
-import 'package:hackto/screens/patient/medication/medication.dart';
-import 'package:hackto/screens/patient/prescription/prescription.dart';
-import 'package:hackto/screens/patient/treatment/treatment.dart';
-import '../appointment/appointment.dart';
+import 'package:hackto/data/repo.dart';
+import 'package:hackto/main.dart';
+import '../../chatbot_screen.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   final String patientId;
@@ -27,7 +25,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       DashboardScreen(navigateTo: _navigateToScreen),
       const AppointmentScreen(),
       const TreatmentPlanScreen(),
-      MedicationScreen(patientId: widget.patientId),
+      MedicationTrackerScreen(pid: widget.patientId),
       const ChatbotScreen(),
       PrescriptionScreen(pid: widget.patientId),
     ]);
@@ -150,3 +148,168 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
+
+// ---------- TREATMENT ----------
+class TreatmentPlanScreen extends StatelessWidget {
+  const TreatmentPlanScreen({super.key});
+
+  Widget _buildPlanItem(String text, {bool completed = false}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            completed ? Icons.check_circle : Icons.hourglass_bottom,
+            color: completed ? Colors.green : Colors.orange,
+          ),
+          const SizedBox(width: 12),
+          Text(text, style: const TextStyle(fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text("Your Progress: 60%",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          _buildPlanItem("Physiotherapy Sessions", completed: true),
+          _buildPlanItem("Medication Adherence", completed: true),
+          _buildPlanItem("Follow-up Appointment", completed: false),
+          const Divider(height: 32),
+          const Text("Supplementary Guide"),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Text("🏠 Physiotherapy Exercises for Home",
+                style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+// ---------- PRESCRIPTIONS ----------
+class PrescriptionScreen extends StatelessWidget {
+  final String pid;
+  const PrescriptionScreen({super.key, required this.pid});
+
+  @override
+  Widget build(BuildContext context) {
+    final patient = repo.getPatient(pid);
+    if (patient == null) {
+      return const Center(child: Text("No patient found"));
+    }
+    final prescriptions = patient.prescriptions;
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: prescriptions.length,
+      itemBuilder: (context, i) {
+        final presc = prescriptions[i];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          child: ExpansionTile(
+            title: Text("Prescription ${i + 1}"),
+            children: [
+              ListTile(
+                title: Text(presc.name),
+                subtitle: Text("${presc.dose} • ${presc.frequency}"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ---------- APPOINTMENTS ----------
+class AppointmentScreen extends StatelessWidget {
+  const AppointmentScreen({super.key});
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: Text("Appointment Screen Placeholder"));
+}
+
+// ---------- MEDICATION TRACKER ----------
+class MedicationTrackerScreen extends StatefulWidget {
+  final String pid;
+  const MedicationTrackerScreen({super.key, required this.pid});
+
+  @override
+  State<MedicationTrackerScreen> createState() =>
+      _MedicationTrackerScreenState();
+}
+
+class _MedicationTrackerScreenState extends State<MedicationTrackerScreen> {
+  final Map<String, bool> medStatus = {};
+
+  @override
+  void initState() {
+    super.initState();
+    final patient = repo.getPatient(widget.pid);
+    if (patient != null) {
+      for (var presc in patient.prescriptions) {
+        medStatus[presc.name] = false; // ✅ Track per prescription
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (medStatus.isEmpty) {
+      return const Center(child: Text("No medications found"));
+    }
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: medStatus.keys.map((med) {
+        return Card(
+          child: ListTile(
+            title: Text(med),
+            subtitle: const Text("Tap toggle to mark as taken"),
+            trailing: Switch(
+              value: medStatus[med]!,
+              onChanged: (val) {
+                setState(() => medStatus[med] = val);
+              },
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
