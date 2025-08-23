@@ -1,0 +1,2 @@
+D:/VS/AppDev/Projects/Reuth/android/app/.cxx/RelWithDebInfo/37e50345/x86/CMakeFiles/edit_cache.dir
+D:/VS/AppDev/Projects/Reuth/android/app/.cxx/RelWithDebInfo/37e50345/x86/CMakeFiles/rebuild_cache.dir

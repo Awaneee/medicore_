@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hackto/data/repo.dart';
-import 'package:hackto/main.dart';
 import 'package:hackto/screens/patient/chatbot/chatbot.dart';
 import 'package:hackto/screens/patient/medication/medication.dart';
 import 'package:hackto/screens/patient/prescription/prescription.dart';
 import 'package:hackto/screens/patient/treatment/treatment.dart';
 import '../appointment/appointment.dart';
 
-// ---------------- PATIENT HOME ----------------
 class PatientHomeScreen extends StatefulWidget {
   final String patientId;
   final String doctorId;
@@ -30,7 +27,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       DashboardScreen(navigateTo: _navigateToScreen),
       const AppointmentScreen(),
       const TreatmentPlanScreen(),
-      MedicationTrackerScreen(pid: widget.patientId),
+      MedicationScreen(patientId: widget.patientId),
       const ChatbotScreen(),
       PrescriptionScreen(pid: widget.patientId),
     ]);
@@ -73,7 +70,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 }
 
-// ---------- DASHBOARD ----------
 class DashboardScreen extends StatelessWidget {
   final Function(int) navigateTo;
   const DashboardScreen({super.key, required this.navigateTo});
@@ -154,14 +150,3 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
-
-// ---------- TREATMENT ----------
-
-
-// ---------- CHATBOT ----------
-
-
-// ---------- PRESCRIPTIONS ----------
-
-
-// ---------- MEDICATION TRACKER ----------
