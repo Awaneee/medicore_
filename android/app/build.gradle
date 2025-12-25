@@ -1,6 +1,313 @@
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     id "com.google.gms.google-services"    // Firebase google services plugin
+//     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+//     id "dev.flutter.flutter-gradle-plugin"
+// }
+
+// android {
+//     namespace = "com.example.hackto"
+//     compileSdk = flutter.compileSdkVersion
+//     ndkVersion = flutter.ndkVersion
+
+//     compileOptions {
+//         sourceCompatibility = JavaVersion.VERSION_1_8
+//         targetCompatibility = JavaVersion.VERSION_1_8
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = JavaVersion.VERSION_1_8.toString()
+//     }
+
+//     defaultConfig {
+//         // Specify your own unique Application ID (must match Firebase)
+//         applicationId = "com.example.hackto"
+//         minSdkVersion = flutter.minSdkVersion                      // Updated minimum SDK version requirement for Firestore
+//         targetSdk = flutter.targetSdkVersion
+//         versionCode = flutter.versionCode
+//         versionName = flutter.versionName
+//     }
+
+//     buildTypes {
+//         release {
+//             // Signing config for release build, using debug keys here for dev
+//             signingConfig = signingConfigs.debug
+//         }
+//     }
+// }
+
+// flutter {
+//     source = "../.."
+// }
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     id "com.google.gms.google-services"   // keep firebase here
+//     id "dev.flutter.flutter-gradle-plugin"
+// }
+
+// android {
+//     namespace "com.example.hackto"
+//     compileSdk 34
+
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+//         minSdkVersion flutter.minSdkVersion
+//         targetSdkVersion 34
+//         versionCode 1
+//         versionName "1.0"
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = "17"
+//     }
+
+//     buildTypes {
+//         release {
+//             signingConfig signingConfigs.debug
+//             minifyEnabled false
+//         }
+//     }
+// }
+
+// dependencies {
+//     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+// }
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     id "com.google.gms.google-services"
+//     id "dev.flutter.flutter-gradle-plugin"
+// }
+
+// android {
+//     namespace "com.example.hackto"
+//     compileSdk 34
+
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+//         minSdkVersion flutter.minSdkVersion
+//         targetSdkVersion 34
+//         versionCode 1
+//         versionName "1.0"
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = "17"
+//     }
+
+//     buildTypes {
+//         debug {
+//             minifyEnabled false
+//             shrinkResources false        // 💚 FIXED
+//         }
+//         release {
+//             signingConfig signingConfigs.debug
+//             minifyEnabled false
+//             shrinkResources false        // 💚 FIXED
+//         }
+//     }
+// }
+
+// dependencies {
+//     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+// }
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     id "com.google.gms.google-services"
+//     id "dev.flutter.flutter-gradle-plugin"
+// }
+
+// android {
+//     namespace "com.example.hackto"
+
+//     compileSdk 36           // << REQUIRED FIX
+//     ndkVersion "27.0.12077973" // REQUIRED for speech_to_text
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+//         minSdkVersion flutter.minSdkVersion
+//         targetSdk 36       // good for modern devices
+//         versionCode 1
+//         versionName "1.0"
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = "17"
+//     }
+
+//     buildTypes {
+//         debug {
+//             minifyEnabled false
+//             shrinkResources false
+//         }
+//         release {
+//             signingConfig signingConfigs.debug
+//             minifyEnabled false
+//             shrinkResources false
+//         }
+//     }
+// }
+// plugins {
+//     id "com.android.application"
+//     id "org.jetbrains.kotlin.android"
+//     id "dev.flutter.flutter-gradle-plugin"
+//     id "com.google.gms.google-services"
+// }
+
+// android {
+//     namespace "com.example.hackto"
+
+//     compileSdk = 36
+//     ndkVersion "27.0.12077973"
+
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+
+//         // Use a fixed minSdk; do NOT reference flutter.minSdkVersion here.
+//         minSdkVersion = flutter.minSdkVersion
+//         targetSdk = 36
+
+//         versionCode = 1
+//         versionName = "1.0"
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = "17"
+//     }
+
+//     buildTypes {
+//         debug {
+//             minifyEnabled false
+//             shrinkResources false
+//         }
+//         release {
+//             signingConfig signingConfigs.debug
+//             minifyEnabled false
+//             shrinkResources false
+//         }
+//     }
+// }
+
+// dependencies {
+//     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+// }
+// ====== FORCED FLUTTER ENGINE LOADER ====== //
+// apply plugin: "com.android.application"
+// apply plugin: "kotlin-android"
+
+// // <-- Most important line in all this fix -->
+// apply from: "$flutterSdkPath/packages/flutter_tools/gradle/flutter.gradle"
+
+// android {
+//     namespace "com.example.hackto"
+//     compileSdk 34
+
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+//         minSdkVersion flutter.minSdkVersion
+//         targetSdk 34
+//         versionCode 1
+//         versionName "1.0"
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions { jvmTarget = "17" }
+
+//     buildTypes {
+//         release {
+//             minifyEnabled false
+//             shrinkResources false
+//             signingConfig signingConfigs.debug
+//         }
+//         debug {
+//             minifyEnabled false
+//             shrinkResources false
+//         }
+//     }
+// }
+
+// dependencies {
+//     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0"
+// }
+// plugins {
+//     id "com.android.application"
+//     id "kotlin-android"
+//     id "dev.flutter.flutter-gradle-plugin"
+//     id "com.google.gms.google-services"
+// }
+
+// android {
+//     namespace "com.example.hackto"
+//     compileSdk 34
+
+//     defaultConfig {
+//         applicationId "com.example.hackto"
+//         minSdkVersion flutter.minSdkVersion
+//         targetSdk 34
+//         versionCode 1
+//         versionName "1.0"
+//         multiDexEnabled true
+//     }
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_17
+//         targetCompatibility JavaVersion.VERSION_17
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = "17"
+//     }
+
+//     packagingOptions {
+//         resources.excludes += [
+//             "META-INF/DEPENDENCIES",
+//             "META-INF/LICENSE",
+//             "META-INF/LICENSE.txt",
+//             "META-INF/NOTICE",
+//             "META-INF/NOTICE.txt"
+//         ]
+//     }
+// }
+
+// dependencies {
+//     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0"
+
+//     // 🔥 MANUAL FLUTTER ENGINE INJECTION
+//     implementation files("$flutterRoot/bin/cache/artifacts/engine/android-arm-release/flutter.jar")
+//     implementation files("$flutterRoot/bin/cache/artifacts/engine/android-arm-profile/flutter.jar")
+//     implementation files("$flutterRoot/bin/cache/artifacts/engine/android-arm64-profile/flutter.jar")
+//     implementation files("$flutterRoot/bin/cache/artifacts/engine/android-arm64-release/flutter.jar")
+// }
 plugins {
     id "com.android.application"
     id "kotlin-android"
+    id "com.google.gms.google-services"    // Firebase google services plugin
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
@@ -16,15 +323,13 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Specify your own unique Application ID (must match Firebase)
         applicationId = "com.example.hackto"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdkVersion = flutter.minSdkVersion                      // Updated minimum SDK version requirement for Firestore
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -32,8 +337,7 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Signing config for release build, using debug keys here for dev
             signingConfig = signingConfigs.debug
         }
     }
@@ -41,4 +345,4 @@ android {
 
 flutter {
     source = "../.."
-}
+}  

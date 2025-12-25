@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:hackto/data/repo.dart';
-import 'package:hackto/main.dart';
-import '../../chatbot_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hackto/screens/chatbot_screen.dart';
+import 'package:hackto/screens/patient/chatbot/chatbot.dart';
+import 'package:hackto/screens/patient/medication/medication.dart';
+import 'package:hackto/screens/patient/prescription/prescription.dart';
+import '../appointment/appointment.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   final String patientId;
   final String doctorId;
 
-  const PatientHomeScreen(
-      {super.key, required this.patientId, required this.doctorId});
+  const PatientHomeScreen({
+    super.key,
+    required this.patientId,
+    required this.doctorId,
+  });
 
   @override
   State<PatientHomeScreen> createState() => _PatientHomeScreenState();
@@ -16,23 +22,28 @@ class PatientHomeScreen extends StatefulWidget {
 
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
   int _currentIndex = 0;
-  final List<Widget> _screens = [];
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _screens.addAll([
-      DashboardScreen(navigateTo: _navigateToScreen),
-      const AppointmentScreen(),
-      const TreatmentPlanScreen(),
-      MedicationTrackerScreen(pid: widget.patientId),
-      const ChatbotScreen(),
-      PrescriptionScreen(pid: widget.patientId),
-    ]);
+    _screens = [
+      DashboardScreen(
+        patientId: widget.patientId,
+        navigateTo: _navigateToScreen,
+      ),
+       BookAppointmentPage(patientId: widget.patientId,doctorId: widget.doctorId,), // Index 1
+      MedicationScreen(patientId: widget.patientId), // Index 2
+      const ChatbotScreen(), // Index 3
+      PrescriptionScreen(pid: widget.patientId), // Index 4
+    ];
   }
 
   void _navigateToScreen(int index) {
-    setState(() => _currentIndex = index);
+    // Add bounds checking
+    if (index >= 0 && index < _screens.length) {
+      setState(() => _currentIndex = index);
+    }
   }
 
   @override
@@ -46,17 +57,16 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.white70,
+        backgroundColor: const Color.fromARGB(255, 167, 201, 219),
+        selectedItemColor: const Color.fromARGB(255, 6, 6, 6),
+        unselectedItemColor: const Color.fromARGB(179, 0, 0, 0),
         onTap: _navigateToScreen,
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today), label: 'Appointments'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.healing), label: 'Treatment'),
+          // ✅ Removed Treatment item
           BottomNavigationBarItem(
               icon: Icon(Icons.medication), label: 'Medication'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chatbot'),
@@ -69,247 +79,211 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 }
 
 class DashboardScreen extends StatelessWidget {
+  final String patientId;
   final Function(int) navigateTo;
-  const DashboardScreen({super.key, required this.navigateTo});
+  const DashboardScreen(
+      {super.key, required this.patientId, required this.navigateTo});
 
-  Widget _buildTimelineTile(String text) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+  Widget _quickAction({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
-      child: Text(text, style: const TextStyle(fontSize: 16)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text("Treatment Timeline",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          _buildTimelineTile("Initial Assessment - Jan 15, 2024"),
-          _buildTimelineTile("Physical Therapy - Feb 1 to Mar 15"),
-          _buildTimelineTile("Medication Review - Mar 22, 2024"),
-          _buildTimelineTile("Follow-up Consultation - Apr 5, 2024"),
-          const Divider(height: 32),
-          const Text("Upcoming Appointments",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Card(
-            elevation: 4,
-            shadowColor: Colors.black12,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Column(
-              children: const [
-                ListTile(title: Text("Dr. Emily White - Aug 23, 2025")),
-                Divider(height: 1),
-                ListTile(title: Text("Dr. John Miller - Aug 25, 2025")),
-              ],
-            ),
-          ),
-          const Divider(height: 32),
-          const Text("Quick Actions",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              OutlinedButton(
-                onPressed: () => navigateTo(1),
-                child: const Text("Appointments"),
-              ),
-              OutlinedButton(
-                onPressed: () => navigateTo(5),
-                child: const Text("Prescriptions"),
-              ),
-              OutlinedButton(
-                onPressed: () => navigateTo(4),
-                child: const Text("Chatbot"),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------- TREATMENT ----------
-class TreatmentPlanScreen extends StatelessWidget {
-  const TreatmentPlanScreen({super.key});
-
-  Widget _buildPlanItem(String text, {bool completed = false}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            completed ? Icons.check_circle : Icons.hourglass_bottom,
-            color: completed ? Colors.green : Colors.orange,
-          ),
-          const SizedBox(width: 12),
-          Text(text, style: const TextStyle(fontSize: 16)),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text("Your Progress: 60%",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          _buildPlanItem("Physiotherapy Sessions", completed: true),
-          _buildPlanItem("Medication Adherence", completed: true),
-          _buildPlanItem("Follow-up Appointment", completed: false),
-          const Divider(height: 32),
-          const Text("Supplementary Guide"),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
+              Icon(icon, size: 28, color: Colors.blue.shade700),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              if (subtitle.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 ),
-              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _welcomeBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 22, top: 10),
+      child: Row(
+        children: const [
+          Icon(Icons.waving_hand, color: Colors.blue, size: 28),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              "Welcome back!\nHow can we help you today?",
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue,
+                  fontSize: 18),
             ),
-            child: const Text("🏠 Physiotherapy Exercises for Home",
-                style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
     );
   }
-}
 
+  Widget _medicationsToTake() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('patients')
+          .doc(patientId)
+          .collection('medications')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final meds = snapshot.data!.docs;
+        if (meds.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              "No medications scheduled.",
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          );
+        }
+        final showMeds = meds.take(3).toList();
 
-// ---------- PRESCRIPTIONS ----------
-class PrescriptionScreen extends StatelessWidget {
-  final String pid;
-  const PrescriptionScreen({super.key, required this.pid});
-
-  @override
-  Widget build(BuildContext context) {
-    final patient = repo.getPatient(pid);
-    if (patient == null) {
-      return const Center(child: Text("No patient found"));
-    }
-    final prescriptions = patient.prescriptions;
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: prescriptions.length,
-      itemBuilder: (context, i) {
-        final presc = prescriptions[i];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: ExpansionTile(
-            title: Text("Prescription ${i + 1}"),
-            children: [
-              ListTile(
-                title: Text(presc.name),
-                subtitle: Text("${presc.dose} • ${presc.frequency}"),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ...showMeds.map((doc) {
+              final med = doc.data() as Map<String, dynamic>;
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 13),
+                decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    Icon(Icons.medication,
+                        color: Colors.blue.shade700, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: Text(med['name'] ?? 'Medication',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600))),
+                  ],
+                ),
+              );
+            }),
+            if (meds.length > 3)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  "+ ${meds.length - 3} more...",
+                  style: TextStyle(color: Colors.blue.shade400, fontSize: 13),
+                ),
               ),
-            ],
-          ),
+          ],
         );
       },
     );
   }
-}
-
-// ---------- APPOINTMENTS ----------
-class AppointmentScreen extends StatelessWidget {
-  const AppointmentScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Center(child: Text("Appointment Screen Placeholder"));
-}
-
-// ---------- MEDICATION TRACKER ----------
-class MedicationTrackerScreen extends StatefulWidget {
-  final String pid;
-  const MedicationTrackerScreen({super.key, required this.pid});
-
-  @override
-  State<MedicationTrackerScreen> createState() =>
-      _MedicationTrackerScreenState();
-}
-
-class _MedicationTrackerScreenState extends State<MedicationTrackerScreen> {
-  final Map<String, bool> medStatus = {};
-
-  @override
-  void initState() {
-    super.initState();
-    final patient = repo.getPatient(widget.pid);
-    if (patient != null) {
-      for (var presc in patient.prescriptions) {
-        medStatus[presc.name] = false; // ✅ Track per prescription
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (medStatus.isEmpty) {
-      return const Center(child: Text("No medications found"));
-    }
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: medStatus.keys.map((med) {
-        return Card(
-          child: ListTile(
-            title: Text(med),
-            subtitle: const Text("Tap toggle to mark as taken"),
-            trailing: Switch(
-              value: medStatus[med]!,
-              onChanged: (val) {
-                setState(() => medStatus[med] = val);
-              },
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        children: [
+          Row(
+            children: const [
+              Expanded(
+                child: Text("Patient Dashboard",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+              ),
+            ],
+          ),
+          _welcomeBanner(),
+
+          // Quick Actions grid (2x2)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Quick Actions",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _quickAction(
+                      icon: Icons.calendar_today,
+                      title: "Book Appointment",
+                      subtitle: "Schedule with doctors",
+                      onTap: () => navigateTo(1), // ✅ Appointments - Index 1
+                    ),
+                    _quickAction(
+                      icon: Icons.description,
+                      title: "Prescriptions",
+                      subtitle: "View your medications",
+                      onTap: () => navigateTo(4), // ✅ Prescription - Index 4
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    _quickAction(
+                      icon: Icons.chat,
+                      title: "Chatbot",
+                      subtitle: "Ask health questions",
+                      onTap: () => navigateTo(3), // ✅ Chatbot - Index 3
+                    ),
+                    _quickAction(
+                      icon: Icons.medication,
+                      title: "Medications",
+                      subtitle: "Your medicine list",
+                      onTap: () => navigateTo(2), // ✅ Medication - Index 2
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        );
-      }).toList(),
+
+          const SizedBox(height: 12),
+          const Text("Medications To Take",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          const SizedBox(height: 8),
+          _medicationsToTake(),
+        ],
+      ),
     );
   }
 }
-

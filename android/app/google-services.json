@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "698772361060",
+    "project_id": "hackto-2530c",
+    "storage_bucket": "hackto-2530c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:698772361060:android:d9397910b61a40bcbb3471",
+        "android_client_info": {
+          "package_name": "com.example.hackto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCRu8cO-rnuVMEpCOilLdvjRpCwwCYBt0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

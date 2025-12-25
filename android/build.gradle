@@ -1,14 +1,20 @@
-// buildscript {
-//     ext.kotlin_version = '1.9.23' // Ensures compatibility
-//     repositories {
-//         google()
-//         mavenCentral()
-//     }
-//     dependencies {
-//         classpath 'com.android.tools.build:gradle:8.3.1' // The required AGP version
-//         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-//     }
-// }
+buildscript {
+
+    ext.kotlin_version = '1.9.24'        // Updated & compatible with Gradle 8.9
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.5.2'  // Fully works with JDK 17 & Gradle 8.9
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        // Firebase
+        classpath 'com.google.gms:google-services:4.4.2'
+    }
+}
 
 allprojects {
     repositories {
@@ -18,9 +24,11 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
 }
@@ -28,3 +36,44 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+// buildscript {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath 'com.google.gms:google-services:4.3.15'
+//     }
+// }
+
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+
+// rootProject.buildDir = "../build"
+
+// subprojects {
+//     project.buildDir = "${rootProject.buildDir}/${project.name}"
+// }
+
+// tasks.register("clean", Delete) {
+//     delete rootProject.buildDir
+// }
+// buildscript {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+// rootProject.buildDir = "../build"
+// subprojects { project.buildDir = "${rootProject.buildDir}/${project.name}" }
+// tasks.register("clean", Delete) { delete rootProject.buildDir }

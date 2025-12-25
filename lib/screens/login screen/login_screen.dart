@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import '../patient/home/home.dart';
 import '../caregiver/home.dart';
 import '../doctor/home.dart';
@@ -14,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String selectedRole = 'Patient';
+  bool isHebrew = false; // ✅ language toggle
 
   final TextEditingController patientIdController = TextEditingController();
   final TextEditingController doctorIdController = TextEditingController();
@@ -22,6 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? patientIdError;
   String? doctorIdError;
   String? caregiverCodeError;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void dispose() {
@@ -45,7 +50,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _handleLogin(BuildContext context) {
+  Future<bool> _patientExists(String pid, String did) async {
+    final doc = await _firestore.collection('patients').doc(pid).get();
+    if (!doc.exists) return false;
+    final data = doc.data();
+    if (data == null) return false;
+    return (data['doctorId'] ?? '') == did;
+  }
+
+  Future<bool> _doctorExists(String did) async {
+    final doc = await _firestore.collection('doctors').doc(did).get();
+    return doc.exists;
+  }
+
+  Future<void> _handleLogin(BuildContext context) async {
     setState(() {
       patientIdError = null;
       doctorIdError = null;
@@ -57,44 +75,73 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (selectedRole) {
       case 'Patient':
         if (patientIdController.text.isEmpty) {
-          patientIdError = 'Patient ID is required.';
+          patientIdError =
+              isHebrew ? 'נדרש מזהה מטופל' : 'Patient ID is required.';
           isValid = false;
         }
         if (doctorIdController.text.isEmpty) {
-          doctorIdError = 'Doctor ID is required.';
+          doctorIdError =
+              isHebrew ? 'נדרש מזהה רופא' : 'Doctor ID is required.';
           isValid = false;
         }
         if (isValid) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PatientHomeScreen(
-                patientId: patientIdController.text,
-                doctorId: doctorIdController.text,
+          final pid = patientIdController.text.trim();
+          final did = doctorIdController.text.trim();
+          final exists = await _patientExists(pid, did);
+          if (exists) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PatientHomeScreen(
+                  patientId: pid,
+                  doctorId: did,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            setState(() {
+              patientIdError = isHebrew
+                  ? 'מזהה מטופל או רופא לא חוקי'
+                  : 'Invalid PID or DID combination.';
+              doctorIdError = isHebrew
+                  ? 'מזהה מטופל או רופא לא חוקי'
+                  : 'Invalid PID or DID combination.';
+            });
+          }
         }
         break;
+
       case 'Doctor':
         if (doctorIdController.text.isEmpty) {
-          doctorIdError = 'Doctor ID is required.';
+          doctorIdError =
+              isHebrew ? 'נדרש מזהה רופא' : 'Doctor ID is required.';
           isValid = false;
         }
         if (isValid) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DoctorHomeScreen(
-                doctorId: doctorIdController.text,
+          final did = doctorIdController.text.trim();
+          final exists = await _doctorExists(did);
+          if (exists) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DoctorHomeScreen(
+                  doctorId: did,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            setState(() {
+              doctorIdError =
+                  isHebrew ? 'מזהה רופא לא נמצא' : 'Doctor ID not found.';
+            });
+          }
         }
         break;
+
       case 'Caregiver':
         if (caregiverCodeController.text.isEmpty) {
-          caregiverCodeError = 'Caregiver Code is required.';
+          caregiverCodeError =
+              isHebrew ? 'נדרש קוד מטפל' : 'Caregiver Code is required.';
           isValid = false;
         }
         if (isValid) {
@@ -102,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => CaregiverHomeScreen(
-                caregiverId: caregiverCodeController.text,
+                caregiverId: caregiverCodeController.text.trim(),
               ),
             ),
           );
@@ -114,6 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildRoleButton(BuildContext context, String role) {
     final bool isSelected = selectedRole == role;
+    final translatedRole = {
+      'Patient': isHebrew ? 'מטופל' : 'Patient',
+      'Doctor': isHebrew ? 'רופא' : 'Doctor',
+      'Caregiver': isHebrew ? 'מטפל' : 'Caregiver',
+    }[role]!;
+
     return Expanded(
       child: OutlinedButton(
         onPressed: () {
@@ -128,22 +181,22 @@ class _LoginScreenState extends State<LoginScreen> {
           side: BorderSide(
             color: isSelected
                 ? coolors.customColorScheme.primary
-                : coolors.customColorScheme.onSurface.withValues(alpha: 0.5),
+                : coolors.customColorScheme.onSurface.withOpacity(0.5),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           backgroundColor: isSelected
-              ? coolors.customColorScheme.primary.withValues(alpha: 0.1)
+              ? coolors.customColorScheme.primary.withOpacity(0.1)
               : Colors.transparent,
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: Text(
-          role,
+          translatedRole,
           style: TextStyle(
             color: isSelected
                 ? coolors.customColorScheme.primary
-                : coolors.customColorScheme.onSurface.withValues(alpha: 0.7),
+                : coolors.customColorScheme.onSurface.withOpacity(0.7),
           ),
         ),
       ),
@@ -170,7 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: TextField(
               controller: doctorIdController,
               onChanged: (_) => setState(() {}),
-              decoration: dec('Doctor ID', doctorIdError),
+              decoration:
+                  dec(isHebrew ? 'מזהה רופא' : 'Doctor ID', doctorIdError),
             ),
           ),
         if (selectedRole == 'Patient')
@@ -179,14 +233,17 @@ class _LoginScreenState extends State<LoginScreen> {
             child: TextField(
               controller: patientIdController,
               onChanged: (_) => setState(() {}),
-              decoration: dec('Patient ID', patientIdError),
+              decoration:
+                  dec(isHebrew ? 'מזהה מטופל' : 'Patient ID', patientIdError),
             ),
           ),
         if (selectedRole == 'Caregiver')
           TextField(
             controller: caregiverCodeController,
             onChanged: (_) => setState(() {}),
-            decoration: dec('Special Caregiver Code', caregiverCodeError),
+            decoration: dec(
+                isHebrew ? 'קוד מטפל מיוחד' : 'Special Caregiver Code',
+                caregiverCodeError),
           ),
       ],
     );
@@ -194,13 +251,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Apply your custom ColorScheme app-wide within this screen
     final themed =
         Theme.of(context).copyWith(colorScheme: coolors.customColorScheme);
     final cs = themed.colorScheme;
     final size = MediaQuery.of(context).size;
 
-    // Height of the sticky bottom area (button + sign up). Used to pad the scroll view.
     const double stickyAreaApproxHeight = 120;
 
     return Theme(
@@ -214,15 +269,27 @@ class _LoginScreenState extends State<LoginScreen> {
               size.width * 0.08,
               size.height * 0.04,
               size.width * 0.08,
-              // Extra bottom padding so last field isn't hidden behind the sticky bar
               size.height * 0.02 + stickyAreaApproxHeight,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: size.height * 0.06),
+                // ✅ Language toggle row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(isHebrew ? "עברית" : "English"),
+                    Switch(
+                      value: isHebrew,
+                      onChanged: (val) {
+                        setState(() => isHebrew = val);
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: size.height * 0.02),
                 Text(
-                  'Welcome Back',
+                  isHebrew ? 'ברוך שובך' : 'Welcome Back',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
@@ -232,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to your account',
+                  isHebrew ? 'התחבר לחשבון שלך' : 'Sign in to your account',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -241,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: size.height * 0.06),
                 Text(
-                  'Select your role',
+                  isHebrew ? 'בחר את התפקיד שלך' : 'Select your role',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -264,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextButton(
                   onPressed: () {},
                   child: Text(
-                    'Forgot Password?',
+                    isHebrew ? 'שכחת סיסמה?' : 'Forgot Password?',
                     style: TextStyle(
                       color: coolors.customColorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -275,8 +342,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-
-        // Sticky bottom bar (stays visible; lifts above keyboard)
         bottomNavigationBar: AuthBar(
           isEnabled: _isLoginButtonEnabled,
           onSignIn: () => _handleLogin(context),

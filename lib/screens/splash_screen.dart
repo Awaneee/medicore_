@@ -148,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
                   FadeTransition(
                     opacity: _fadeOpacity,
                     child: const Text(
-                      'REUTH HOSPITAL',
+                      'MEDICORE',
                       style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
